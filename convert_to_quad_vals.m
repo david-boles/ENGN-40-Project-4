@@ -26,7 +26,7 @@ function [thrust, pitch, roll] = convert_to_quad_vals(acceleration, yaw)
     theta = acos(dot(a_nos_proj,[0,0,1])/norm(a_nose_proj);
     phi = acos(dot(a_nose_proj, a_desired)/(norm(a_nose_proj)*norm_a));
     
-    [thrust, pitch, roll] = [norm_a*m, theta, phi];2
+    [thrust, pitch, roll] = [norm_a*m, theta, phi];
     
   
 end
