@@ -7,5 +7,17 @@ classdef constants
         PATTERN_TIME_S = 10;
         LANDING_TIME_S = 3;
         PATTERN_START_HEIGHT_M = 0.5;
+        Kpx = ;
+        Kpy = ;
+        Kpz = ;
+        Kdx = ;
+        Kdy = ;
+        Kdz = ;
+        Kix = ;
+        Kiy = ;
+        Kiz = ;
+        Kpyaw = ;
+        Kdyaw = ;
+        Kiyaw = ;
     end
 end
