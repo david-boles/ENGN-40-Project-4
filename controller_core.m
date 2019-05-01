@@ -1,6 +1,7 @@
-% Based on current psi, error ([x, y, z, psi] m or radians), error
-% derivative, and error integral, calculates thrust in quadcopter units,
+% Based on current psi, error ([x, y, z, psi] in m or radians), error
+% derivative, and error integral, calculates thrust in newtons,
 % roll and pitch in radians, and yaw acceleration in rad/s^2
-function [thrust, roll, pitch, yaw_acceleration] = controller_core(psi, error, error_derivative, error_integral)
-    
+function [thrust, roll, pitch, a_psi] = controller_core(psi, error, error_derivative, error_integral)
+    [a_x, a_y, a_z, a_psi] = pid(error, error_derivative, error_integral);
+    [thrust, pitch, roll] = convert_to_quad_vals(accelerations(1:3));
 end
