@@ -7,7 +7,8 @@ initial_w=[0,0,0,0,0,0,0,0,0,0,0,0]; %[x,y,z,yaw,vx,vy,vz,omega_psi,ex,ey,ez,e_o
 
 time_range=[0,50];
 
-[t_values,sol_values] = ode45(@(t,w) diff_eq(t,w,m,g),time_range,initial_w);
+[t_values,sol_values] = ode45(@(t,w) diff_eq(t,w,m,g),...
+    time_range,initial_w);
 plot(t_values,sol_values);
 legend;
 end
@@ -32,19 +33,12 @@ dyerror=(ystar-y)-(ystarold-y);
 dzerror=(zstar-z)-(zstarold-z);
 dyawerror=(yawstar-yaw)-(yawstarold-yaw);
 else
-    dxerror=(xstar-x);
-    dyerror=(ystar-y);
-    dzerror=(zstar-z);
-    dyawerror=(yawstar-yaw);
+    
 end
 
-xint=int(xstar-x,t,0,t);
-yint=int(ystar-y,t,0,t);
-zint=int(zstar-y,t,0,t);
-yawint=int(yawstar-yaw,t,0,t);
 
 [tau,phi,theta,new_lambda]=controller_core(yaw, [xstar,ystar,zstar,yawstar],...
-    [dxerror,dyerror,dzerror,dyawerror],[xint,yint,zint,yawint]);
+    [dxerror,dyerror,dzerror,dyawerror],[]);
 
 %equations
 dxdt=vx;
