@@ -17,5 +17,7 @@ classdef constants
         Kiy = ;
         Kiz = ;
         Kpyaw = ;
+        Kdyaw = ;
+        Kiyaw = ;
     end
 end
