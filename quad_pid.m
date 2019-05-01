@@ -2,7 +2,7 @@
 % units of m, rad (/s or *s respectively), returns desired linear
 % acceleration and yaw acceleration
 % ([a_x, a_y, a_z, alpha_psi] in m/s^2 and rad/s^2)
-function [a_x, a_y, a_z, alpha_psi] = pid(error, error_derivative, error_integral)
+function [a_x, a_y, a_z, alpha_psi] = quad_pid(error, error_derivative, error_integral)
 
 error_x = error(1);
 error_y = error(2);
@@ -19,10 +19,10 @@ error_iy = error_integral(2);
 error_iz = error_integral(3);
 error_ipsi = error_integral(4);
 
-a_x = Kpx*(error_x) + Kdx*error_dx + Kix*error_ix;
-a_y = Kpy*(error_y) + Kdy*error_dy + Kiy*error_iy;
-a_z = Kpz*(error_z) + Kdz*error_dz + Kiz*error_iz;
+a_x = constants.Kpx*(error_x) + constants.Kdx*error_dx + constants.Kix*error_ix;
+a_y = constants.Kpy*(error_y) + constants.Kdy*error_dy + constants.Kiy*error_iy;
+a_z = constants.Kpz*(error_z) + constants.Kdz*error_dz + constants.Kiz*error_iz;
 
-alpha_psi = Kpyaw*(error_psi) + Kdyaw*(error_dpsi) + Kiyaw*(error_ipsi);
+alpha_psi = constants.Kpyaw*(error_psi) + constants.Kdyaw*(error_dpsi) + constants.Kiyaw*(error_ipsi);
 
 end

@@ -1,15 +1,15 @@
 function simulation
 % function to calculate position (x,y,z), veloctiy
-m=38*10^-3; %kilograms
+m=constants.MASS_KG;
 %Beta=7.923*10^-6; %Newtons
-g=9.81; %Newtons
-initial_w=[0,0,0,0,0,0,0,0,0,0,0,0]; %[x,y,z,yaw,vx,vy,vz,omega_psi,ex,ey,ez,e_omega_psi]
+g=constants.G; %Newtons
+initial_w=[0,0,0,0,0,0,0,0,0,0,0,0]; %[x,y,z,yaw,vx,vy,vz,omega_psi,ex,ey,ez,e_psi]
 
-time_range=[0,50];
+time_range=[0,16];
 
 [t_values,sol_values] = ode45(@(t,w) diff_eq(t,w,m,g),time_range,initial_w);
 plot(t_values,sol_values);
-legend;
+legend("x","y","z","yaw","vx","vy","vz","omega_psi","ex","ey","ez","e_psi");
 end
 
 function dwdt=diff_eq(t,w,m,g)
@@ -20,31 +20,34 @@ function dwdt=diff_eq(t,w,m,g)
 x=w(1);
 y=w(2);
 z=w(3);
-vx=w(4);
-vy=w(5);
-vz=w(6);
-yaw=w(7);
+yaw=w(4);
+vx=w(5);
+vy=w(6);
+vz=w(7);
+omega_psi=w(8);
+ex=w(9);
+ey=w(10);
+ez=w(11);
+e_psi=w(12);
 
-if t>1
-    [xstarold,ystarold,zstarold,yawstarold]=path(t-1);
-dxerror=(xstar-x)-(xstarold-x);
-dyerror=(ystar-y)-(ystarold-y);
-dzerror=(zstar-z)-(zstarold-z);
-dyawerror=(yawstar-yaw)-(yawstarold-yaw);
-else
-    dxerror=(xstar-x);
-    dyerror=(ystar-y);
-    dzerror=(zstar-z);
-    dyawerror=(yawstar-yaw);
-end
+xerror = xstar - x;
+yerror = ystar - y;
+zerror = zstar - z;
+yawerror = yawstar - yaw;
 
-xint=int(xstar-x,t,0,t);
-yint=int(ystar-y,t,0,t);
-zint=int(zstar-y,t,0,t);
-yawint=int(yawstar-yaw,t,0,t);
+[xstarold,ystarold,zstarold,yawstarold]=path(t-constants.SIM_DERIV_DT);
+dxstardt=(xstar-xstarold)/constants.SIM_DERIV_DT;
+dystardt=(ystar-ystarold)/constants.SIM_DERIV_DT;
+dzstardt=(zstar-zstarold)/constants.SIM_DERIV_DT;
+dyawstardt=(yawstar-yawstarold)/constants.SIM_DERIV_DT;
 
-[tau,phi,theta,new_lambda]=controller_core(yaw, [xstar,ystar,zstar,yawstar],...
-    [dxerror,dyerror,dzerror,dyawerror],[xint,yint,zint,yawint]);
+dxerrordt=dxstardt-vx;
+dyerrordt=dystardt-vy;
+dzerrordt=dzstardt-vz;
+dyawerrordt=dyawstardt-omega_psi;
+
+[tau,phi,theta,alpha_psi]=controller_core(yaw, [xerror,yerror,zerror,yawerror],...
+    [dxerrordt,dyerrordt,dzerrordt,dyawerrordt],[ex,ey,ez,e_psi]);
 
 %equations
 dxdt=vx;
@@ -54,11 +57,11 @@ dyawdt=omega_psi;
 dvxdt=(sin(theta)*sin(yaw)+cos(theta)*sin(phi)*cos(yaw))*tau/m;
 dvydt=(cos(theta)*sin(phi)*sin(yaw)-sin(theta)*cos(yaw))*tau/m;
 dvzdt=cos(theta)*cos(phi)*tau/m-g;
-domega_psidt=new_lambda;
+domega_psidt=alpha_psi;
 dexdt=xstar-x;
 deydt=ystar-y;
 dezdt=zstar-z;
-de_omega_psidt=yawstar-yaw;
+de_psidt=yawstar-yaw;
 
-dwdt=[dxdt;dydt;dzdt;dyawdt;dvxdt;dvydt;dvzdt;domega_psidt;dexdt;deydt;dezdt;de_omega_psidt];
+dwdt=[dxdt;dydt;dzdt;dyawdt;dvxdt;dvydt;dvzdt;domega_psidt;dexdt;deydt;dezdt;de_psidt];
 end
