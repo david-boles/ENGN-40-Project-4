@@ -29,7 +29,7 @@ end
 
 % Pattern function, starting and ending (p_time = 0 or 1) at [0, 0, 0, 0]
 function [x, y, z, psi] = pattern(p_time)
-    x = 0;
+    x = 0.5;
     y = 0;
     z = 0;
     psi = 0;

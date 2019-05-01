@@ -10,7 +10,7 @@ classdef constants
         PATTERN_START_HEIGHT_M = 0;
         MIN_THRUST_N = 0;
         MAX_THRUST_N = 60000*constants.THRUST_UNITS_TO_N;
-        Kpx = 2.5;
+        Kpx = 0.000001;
         Kpy = 0;
         Kpz = 2.5;
         Kdx = 0;
