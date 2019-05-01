@@ -60,99 +60,105 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
     persistent output_file;
     persistent format_string;
     persistent n_printed_variables;
+    persistent initial_position;
+    persistent last_errors;
+    persistent error_integrals;
+    persistent last_omega_psi;
     
     if (INITIALIZING>0.5)   % We evaluate this block while initializing
        if (isempty(output_file))   % This opens a csv file for printing
          output_filename = strcat(datafile_path,'\flight_data.csv');
          output_file = fopen(output_filename,'w');
        end
+       
        if isempty(format_string)
-          n_printed_variables = 21;  % This is the # of variables printed to the .csv file 
+          n_printed_variables = 29;  % This is the # of variables printed to the .csv file 
           format_string = '%12.8f';
           for i=1:n_printed_variables-1
               format_string = strcat(format_string,', %12.8f');
           end
           format_string = strcat(format_string,'\n');
        end
+       
+       initial_position = get_quad_pos( filter_vals,filter_wins,n_tracked_colors,dtime );
+       
+       if isempty(last_errors)
+          last_errors = [0, 0, 0, 0];
+       end
+       
+       if isempty(error_integrals)
+          error_integrals = [0, 0, 0, 0];
+       end
+       
+       if isempty(last_omega_psi)
+           last_omega_psi = 0;
+       end
+       
+       fprintf(output_file, ...
+            'dtime, time, flightTimeRemaining, ' + ...
+            'acceleration, acceleration(2), acceleration(3), ' + ...
+            'orientation(1), orientation(2), orientation(3), ' + ...
+            'quad_pos(1), quad_pos(2), quad_pos(3), ' + ...
+            'path_pos(1), path_pos(2), path_pos(3), ' + ...
+            'path_psi, ' + ...
+            'omega_psi, ' + ...
+            'quad_vals(1), ' + ...
+            'quad_vals(2), quad_vals(3), ' + ...
+            'controls(1), controls(2), controls(3), controls(4), ' + ...
+            'vbat, ' + ...
+            'user_parameters' + ...
+            '\n');
        return;  % This exits the function imeediately on completion of initialization.
     else
     
-        %  The 'getKinectCoords' function measures coords of multiple tracked objects.  The function is already installed in the computers in 096
-        [position_all,velocity_all,OUTOFFRAME_all,FAIL_all] = getKinectCoords( filter_vals,filter_wins,n_tracked_colors,dtime );
-
-
-    %   The output arguments from getKinectCoords contain data for all tracked objects:
-    %           position_all      Positions:  position_all(i,k) is the ith coord for kth tracked object 
-    %           velocity_all      Velocities: velocity_all(i,k) is the ith velocity component for kth tracked object
-    %           OUTOFFRAME_all    OUTOFFRAME_all(k) set to 0 if kth object is inside tracking frame, 1 otherwise
-    %           FAIL_all          FAIL_all(k) set to 0 if kth object was detected successfully, 1 otherwise
-    %                      
-    %   The lines below assume that the quadcopter is the first tracked object.    
+        [quad_pos,OUTOFFRAME_all,FAIL_all] = get_quad_pos( filter_vals,filter_wins,n_tracked_colors,dtime );
         FAIL = FAIL_all(1);             
-        OUTOFFRAME = OUTOFFRAME_all(1); 
-        cam_pos = position_all(:,1); % Position of quadcopter in camera units as a column vector [x;y;z]
-        quad_pos = transpose(cam_pos) .* constants.CAM_UNITS_TO_M; % Position of quadcopter in meters as a row vector [x, y, z]
+        OUTOFFRAME = OUTOFFRAME_all(1);
 
         if (FAIL>0.5) return; end         % Exit if the kinect can't find the quadcopter
         if (OUTOFFRAME>0.5) return; end   % Exit if the quadcopter left the tracking frame 
 
         [path_x, path_y, path_z, path_psi, flightTimeRemaining] = path(time, user_parameters);
-        path_pos = [path_x, path_y, path_z]; % Target position of the quadcopter in meters as a row vector [x, y, z]
+        path_pos = [path_x, path_y, path_z] + initial_position; % Target position of the quadcopter in meters as a row vector [x, y, z]
 
         if (flightTimeRemaining<0)
             FAIL=1;    % Activates the crash-land sequence if the clock ran out
             return
         end
 
-        quad_psi = orientation(3);
+        quad_psi = orientation(3) * (pi / 180);
+        
+        errors = [path_x, path_y, path_z, path_psi] - [path_pos, quad_psi];
+        d_errors_dt = (errors - last_errors) / dtime;
 
-        % Compute PID results
-        [a_x, a_y, a_z, omega_psi] = pid(quad_pos, path_pos, quad_psi, path_psi, dtime);
-
-        % Compute thrust and angle results
-        quad_vals = convert_to_quad_vals([a_x, a_y, a_z], quad_psi);
-
-        controls = [quad_vals, omega_psi];
-
-        % Print data to the log file - you can add or remove variables as you wish....
+        % Compute controller results
+        [thrust, roll, pitch, a_psi] = controller_core(quad_psi, errors, d_errors_dt, error_integrals);
+        
+        % Compute omega psi
+        omega_psi = last_omega_psi + (a_psi * dtime);
+        
+        controls = [thrust * (1/constants.THRUST_UNITS_TO_N), roll * (180 / pi), pitch * (180 / pi), omega_psi * (180 / pi)];
+        
+        % Print data to the log file - if changed, also edit above header
+        % printing
+        % and the plot_data function
         fprintf(output_file, format_string, ...
             dtime, time, flightTimeRemaining, ...
             acceleration(1), acceleration(2), acceleration(3), ...
             orientation(1), orientation(2), orientation(3), ...
             quad_pos(1), quad_pos(2), quad_pos(3), ...
-            path_x, path_y, path_z, ...
+            path_pos(1), path_pos(2), path_pos(3), ...
             path_psi, ...
-            a_x, a_y, a_z, ...
             omega_psi, ...
-            quad_vals(1), ...
-            quad_vals(2), quad_vals(3), ...
             controls(1), controls(2), controls(3), controls(4), ...
             vbat, ...
             user_parameters);
+
+        % Update persistent variables
+        last_errors = errors;
+        error_integrals = error_integrals + (errors * dtime);
+        last_omega_psi = omega_psi;
     end
-    
-    if (INITIALIZING>0.5)
-        % Print CSV header
-        fprintf(output_file, ...
-            'dtime, time, flightTimeRemaining, ' + ...
-            'acceleration, acceleration(2), acceleration(3), ' + ...
-            'orientation(1), orientation(2), orientation(3), ' + ...
-            'quad_pos(1), quad_pos(2), quad_pos(3), ' + ...
-            'path_x, path_y, path_z, ' + ...
-            'path_psi, ' + ...
-            'a_x, a_y, a_z, ' + ...
-            'omega_psi, ' + ...
-            'quad_vals(1), ' + ...
-            'quad_vals(2), quad_vals(3), ' + ...
-            'controls(1), controls(2), controls(3), controls(4), ...
-            vbat, ...
-            user_parameters);
-    end
-%
-% Before your first flight you should write a separate code that will read
-% the csv file and plot at least the desired position as a function of time
-% We will use this to test your code during the flight.
-% 
     
 end
 

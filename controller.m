@@ -61,6 +61,9 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
     persistent format_string;
     persistent n_printed_variables;
     persistent initial_position;
+    persistent last_errors;
+    persistent error_integrals;
+    persistent last_omega_psi;
     
     if (INITIALIZING>0.5)   % We evaluate this block while initializing
        if (isempty(output_file))   % This opens a csv file for printing
@@ -69,7 +72,7 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
        end
        
        if isempty(format_string)
-          n_printed_variables = 29;  % This is the # of variables printed to the .csv file 
+          n_printed_variables = 23;  % This is the # of variables printed to the .csv file 
           format_string = '%12.8f';
           for i=1:n_printed_variables-1
               format_string = strcat(format_string,', %12.8f');
@@ -79,6 +82,18 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
        
        initial_position = get_quad_pos( filter_vals,filter_wins,n_tracked_colors,dtime );
        
+       if isempty(last_errors)
+          last_errors = [0, 0, 0, 0];
+       end
+       
+       if isempty(error_integrals)
+          error_integrals = [0, 0, 0, 0];
+       end
+       
+       if isempty(last_omega_psi)
+           last_omega_psi = 0;
+       end
+       
        fprintf(output_file, ...
             'dtime, time, flightTimeRemaining, ' + ...
             'acceleration, acceleration(2), acceleration(3), ' + ...
@@ -86,10 +101,7 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
             'quad_pos(1), quad_pos(2), quad_pos(3), ' + ...
             'path_pos(1), path_pos(2), path_pos(3), ' + ...
             'path_psi, ' + ...
-            'a_x, a_y, a_z, ' + ...
             'omega_psi, ' + ...
-            'quad_vals(1), ' + ...
-            'quad_vals(2), quad_vals(3), ' + ...
             'controls(1), controls(2), controls(3), controls(4), ' + ...
             'vbat, ' + ...
             'user_parameters' + ...
@@ -112,17 +124,21 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
             return
         end
 
-        quad_psi = orientation(3);
+        quad_psi = orientation(3) * (pi / 180);
+        
+        errors = [path_x, path_y, path_z, path_psi] - [path_pos, quad_psi];
+        d_errors_dt = (errors - last_errors) / dtime;
 
-        % Compute PID results
-        [a_x, a_y, a_z, omega_psi] = pid(quad_pos, path_pos, quad_psi, path_psi, dtime);
-
-        % Compute thrust and angle results
-        quad_vals = convert_to_quad_vals([a_x, a_y, a_z], quad_psi);
-
-        controls = [quad_vals(1) * (1/constants.THRUST_UNITS_TO_N), quad_vals(3) * (180 / pi), quad_vals(2) * (180 / pi), omega_psi * (180 / pi)];
-
-        % Print data to the log file - if changed, also edit below header
+        % Compute controller results
+        [thrust, roll, pitch, a_psi] = controller_core(quad_psi, errors, d_errors_dt, error_integrals);
+        
+        % Compute omega psi
+        omega_psi = last_omega_psi + (a_psi * dtime);
+        
+        controls = [thrust * (1/constants.THRUST_UNITS_TO_N), roll * (180 / pi), pitch * (180 / pi), omega_psi * (180 / pi)];
+        
+        % Print data to the log file - if changed, also edit above header
+        % printing
         % and the plot_data function
         fprintf(output_file, format_string, ...
             dtime, time, flightTimeRemaining, ...
@@ -131,13 +147,15 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
             quad_pos(1), quad_pos(2), quad_pos(3), ...
             path_pos(1), path_pos(2), path_pos(3), ...
             path_psi, ...
-            a_x, a_y, a_z, ...
             omega_psi, ...
-            quad_vals(1), ...
-            quad_vals(2), quad_vals(3), ...
             controls(1), controls(2), controls(3), controls(4), ...
             vbat, ...
             user_parameters);
+
+        % Update persistent variables
+        last_errors = errors;
+        error_integrals = error_integrals + (errors * dtime);
+        last_omega_psi = omega_psi;
     end
     
 end

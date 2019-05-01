@@ -15,14 +15,10 @@ while true
     quad_pos = M(10:12, :);
     path_pos = M(13:15, :);
     path_psi = M(16, :);
-    target_acceleration = M(17:19, :);
-    target_omega_psi = M(20, :);
-    target_thrust = M(21, :);
-    target_pitch = M(22, :);
-    target_roll = M(23, :);
-    controls = M(24:27, :);
-    v_bat = M(28, :);
-    user_parameters = M(29, :);
+	omega_psi = M(17, :);
+    controls = M(18:21, :);
+    v_bat = M(22, :);
+    user_parameters = M(23, :);
     
     figure;
     plot(time, dtime);
