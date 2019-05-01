@@ -4,22 +4,23 @@
 % ([a_x, a_y, a_z, omega_psi] in m/s^2 and rad/s)
 function [a_x, a_y, a_z, omega_psi] = pid(error, error_derivative, error_integral)
 
-x = position(1);
-y = position(2);
-z = position(3);
+error_x = error(1);
+error_y = error(2);
+error_z = error(3);
+error_psi = error(4);
 
-xstar = target_position(1);
-ystar = target_position(2);
-zstar = target_position(3);
+error_dx = error_derivative(1);
+error_dy = error_derivative(2);
+error_dz = error_derivative(3);
 
-ex = ex +(xstar-x)*dtime;
-ey = ey +(ystar-y)*dtime;
-ez = ez +(zstar-z)*dtime;
+error_ix = error_integral(1);
+error_iy = error_integral(2);
+error_iz = error_integral(3);
 
-a_x = Kpx*(xstar-x) + (Kdx*(xstar-x))/dtime + Kix*ex;
-a_y = Kpy*(ystar-y) + (Kdy*(ystar-y))/dtime + Kiy*ey;
-a_z = Kpz*(zstar-z) + (Kdz*(zstar-z))/dtime + Kiz*ez;
+a_x = Kpx*(error_x) + Kdx*error_dx + Kix*error_ix;
+a_y = Kpy*(error_y) + Kdy*error_dy + Kiy*error_iy;
+a_z = Kpz*(error_z) + Kdz*error_dz + Kiz*error_iz;
 
-omega_psi = Kpyaw*(target_yaw - yaw);
+omega_psi = Kpyaw*(error_psi);
 
 end
