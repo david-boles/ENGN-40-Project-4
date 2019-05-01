@@ -1,6 +1,4 @@
-% Takes current error, derivative, and integral as [x, y, z, psi] with
-% units of m, rad (/s or *s respectively), returns desired linear
-% acceleration and yaw velocity
+% Takes current error, derivative, and integral [x, y, z, omega]
 % ([a_x, a_y, a_z, omega_psi] in m/s^2 and rad/s)
 function [a_x, a_y, a_z, omega_psi] = pid(error, error_derivative, error_integral)
 
