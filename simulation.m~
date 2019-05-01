@@ -1,14 +1,15 @@
 function simulation
+close all;
 % function to calculate position (x,y,z), veloctiy
 m=constants.MASS_KG;
 %Beta=7.923*10^-6; %Newtons
 g=constants.G; %Newtons
 initial_w=[0,0,0,0,0,0,0,0,0,0,0,0]; %[x,y,z,yaw,vx,vy,vz,omega_psi,ex,ey,ez,e_psi]
 
-time_range=[0,500];
+time_range=[0,16];
 
 [t_values,sol_values] = ode45(@(t,w) diff_eq(t,w,m,g),time_range,initial_w);
-plot(t_values,sol_values);
+plot(t_values,sol_values,"LineWidth",2);
 legend("x","y","z","yaw","vx","vy","vz","omega_psi","ex","ey","ez","e_psi");
 end
 
@@ -58,10 +59,6 @@ dvxdt=(sin(theta)*sin(yaw)+cos(theta)*sin(phi)*cos(yaw))*tau/m;
 dvydt=(cos(theta)*sin(phi)*sin(yaw)-sin(theta)*cos(yaw))*tau/m;
 dvzdt=cos(theta)*cos(phi)*tau/m-g;
 domega_psidt=alpha_psi;
-dexdt=xstar-x;
-deydt=ystar-y;
-dezdt=zstar-z;
-de_psidt=yawstar-yaw;
 
-dwdt=[dxdt;dydt;dzdt;dyawdt;dvxdt;dvydt;dvzdt;domega_psidt;dexdt;deydt;dezdt;de_psidt];
+dwdt=[dxdt;dydt;dzdt;dyawdt;dvxdt;dvydt;dvzdt;domega_psidt;xerror;yerror;zerror;yaw];
 end

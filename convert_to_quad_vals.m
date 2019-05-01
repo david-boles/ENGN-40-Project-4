@@ -13,7 +13,7 @@ function [thrust, pitch, roll] = convert_to_quad_vals(acceleration, yaw)
 
         % Rotation matrix to rotate coordinate space to match quadcopter
         % This allows us to continue calculations as if yaw=0
-        R = [0, -sin(-yaw), 0; sin(-yaw), cos(-yaw), -sin(-yaw); 0, 0, 1];
+        R = [cos(yaw), sin(yaw), 0; -sin(yaw), cos(yaw), 0; 0, 0, 1];
         a_rotated = R*acceleration;
 
         % Compute acceleration caused by applied thrust to compensante for gravity (we still want to be in the air!!)
@@ -40,7 +40,7 @@ function [thrust, pitch, roll] = convert_to_quad_vals(acceleration, yaw)
 
         % negative thrust correction (see lines 24-27)
         if is_nose_diving
-            norm_a = -norma_a;
+            norm_a = -norm_a;
         end
 
         thrust=norm_a*m;

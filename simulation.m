@@ -1,4 +1,5 @@
 function simulation
+close all;
 % function to calculate position (x,y,z), veloctiy
 m=constants.MASS_KG;
 %Beta=7.923*10^-6; %Newtons
@@ -8,8 +9,26 @@ initial_w=[0,0,0,0,0,0,0,0,0,0,0,0]; %[x,y,z,yaw,vx,vy,vz,omega_psi,ex,ey,ez,e_p
 time_range=[0,16];
 
 [t_values,sol_values] = ode45(@(t,w) diff_eq(t,w,m,g),time_range,initial_w);
-plot(t_values,sol_values);
-legend("x","y","z","yaw","vx","vy","vz","omega_psi","ex","ey","ez","e_psi");
+figure
+plot(t_values,sol_values(:,[1 5 9]),"LineWidth",2);
+title("x values");
+legend("x","vx","ex");
+
+figure
+plot(t_values,sol_values(:,[2 6 10]),"LineWidth",2);
+title("y values");
+legend("y","vy","ey");
+
+figure
+plot(t_values,sol_values(:,[3 7 11]),"LineWidth",2);
+title("z values");
+legend("z","vz","ez");
+
+figure
+plot(t_values,sol_values(:,[4 8 12]),"LineWidth",2);
+title("yaw values");
+legend("yaw","omega_psi","e_psi");
+
 end
 
 function dwdt=diff_eq(t,w,m,g)
@@ -46,7 +65,7 @@ dyerrordt=dystardt-vy;
 dzerrordt=dzstardt-vz;
 dyawerrordt=dyawstardt-omega_psi;
 
-[tau,phi,theta,alpha_psi]=controller_core(yaw, [xerror,yerror,zerror,yawerror],...
+[tau,theta,phi,alpha_psi]=controller_core(yaw, [xerror,yerror,zerror,yawerror],...
     [dxerrordt,dyerrordt,dzerrordt,dyawerrordt],[ex,ey,ez,e_psi]);
 
 %equations
@@ -58,10 +77,6 @@ dvxdt=(sin(theta)*sin(yaw)+cos(theta)*sin(phi)*cos(yaw))*tau/m;
 dvydt=(cos(theta)*sin(phi)*sin(yaw)-sin(theta)*cos(yaw))*tau/m;
 dvzdt=cos(theta)*cos(phi)*tau/m-g;
 domega_psidt=alpha_psi;
-dexdt=xstar-x;
-deydt=ystar-y;
-dezdt=zstar-z;
-de_psidt=yawstar-yaw;
 
-dwdt=[dxdt;dydt;dzdt;dyawdt;dvxdt;dvydt;dvzdt;domega_psidt;dexdt;deydt;dezdt;de_psidt];
+dwdt=[dxdt;dydt;dzdt;dyawdt;dvxdt;dvydt;dvzdt;domega_psidt;xerror;yerror;zerror;yawerror];
 end
