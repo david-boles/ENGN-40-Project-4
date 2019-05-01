@@ -1,6 +1,6 @@
 % Takes in current time and user parameters, returns displacement (from
 % initial position) vector [x, y, z, psi, time_remaining] in meters and seconds.
-% THIS FUNCTION MAY BE CALLED WITH NON-STRICTLY INCREASING TIMES
+% THIS FUNCTION MAY BE CALLED W
 function [x, y, z, psi, time_remaining] = path(time, user_parameters)
     time_remaining = constants.TAKEOFF_TIME_S + constants.PATTERN_TIME_S + constants.LANDING_TIME_S - time;
 
