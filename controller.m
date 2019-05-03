@@ -106,7 +106,11 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
             'vbat, ' , ...
             'user_parameters' , ...
             '\n'));
-       return;  % This exits the function imeediately on completion of initialization.
+       controls = [0, 0, 0, 0];
+       flightTimeRemaining = 0;
+       OUTOFFRAME = 0;
+       FAIL = 0;
+        return;  % This exits the function imeediately on completion of initialization.
     else
     
         [quad_pos,OUTOFFRAME_all,FAIL_all] = get_quad_pos( filter_vals,filter_wins,n_tracked_colors,dtime );
