@@ -11,7 +11,7 @@ function [thrust, pitch, roll] = convert_to_quad_vals(acceleration, yaw)
     m = constants.MASS_KG; 
     g = constants.G;
     if norm(acceleration)
-        thrust_accel = (acceleration + [0; 0; g]);
+        thrust_accel = [cos(yaw), sin(yaw), 0; -sin(yaw), cos(yaw), 0; 0, 0, 1] * (acceleration + [0; 0; g]);
         flip_fix = 1;
         if thrust_accel(3) < 0
             flip_fix = -1;

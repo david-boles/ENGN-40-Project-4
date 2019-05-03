@@ -16,9 +16,9 @@ classdef constants
         Kdx = 3;
         Kdy = 3;
         Kdz = 8;
-        Kix = 1.5;
-        Kiy = 1.5;
-        Kiz = 0.5;
+        Kix = 0;
+        Kiy = 0;
+        Kiz = 0;
         Kpyaw = 1;
         Kdyaw = 2;
         Kiyaw = 0.20;

@@ -107,13 +107,18 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
             'user_parameters' , ...
             '\n'));
        controls = [0, 0, 0, 0];
-       flightTimeRemaining = 0;
+       flightTimeRemaining = 30;
        OUTOFFRAME = 0;
        FAIL = 0;
         return;  % This exits the function imeediately on completion of initialization.
     else
     
         [quad_pos,OUTOFFRAME_all,FAIL_all] = get_quad_pos( filter_vals,filter_wins,n_tracked_colors,dtime );
+        disp('init pos');
+        disp(initial_position);
+        disp('quad_pos:');
+        disp(quad_pos);
+        disp('=========');
         FAIL = FAIL_all(1);             
         OUTOFFRAME = OUTOFFRAME_all(1);
 
@@ -130,8 +135,15 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
 
         quad_psi = orientation(3) * (pi / 180);
         
-        errors = [path_x, path_y, path_z, path_psi] - [path_pos, quad_psi];
-        d_errors_dt = (errors - last_errors) / dtime;
+        errors = [path_pos, path_psi] - [quad_pos, quad_psi];
+        
+        if dtime == 0
+            d_errors_dt = [0,0,0,0];
+        else
+            d_errors_dt = (errors - last_errors) / dtime;
+        end
+        
+        
 
         % Compute controller results
         [thrust, roll, pitch, a_psi] = controller_core(quad_psi, errors, d_errors_dt, error_integrals);
