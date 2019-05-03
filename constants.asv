@@ -5,9 +5,9 @@ classdef constants
         MASS_KG = 0.038;
         THRUST_UNITS_TO_N = 7.923*(10^(-6));
         TAKEOFF_TIME_S = 5;
-        PATTERN_TIME_S = 20;
+        PATTERN_TIME_S = 100;
         LANDING_TIME_S = 5;
-        PATTERN_START_HEIGHT_M = 1;
+        PATTERN_START_HEIGHT_M = 0.5;
         MIN_THRUST_N = 0;
         MAX_THRUST_N = 60000*constants.THRUST_UNITS_TO_N;
         Kpx = 3.8;

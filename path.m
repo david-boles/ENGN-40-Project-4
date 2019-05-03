@@ -29,16 +29,8 @@ end
 
 % Pattern function, starting and ending (p_time = 0 or 1) at [0, 0, 0, 0]
 function [x, y, z, psi] = pattern(p_time)
-t = p_time;
-if t < 0.5   
-    r = t;
-else
-    r = 1 - t;
-end
-r = 0.8*r;
-x = r*cos(5*2*pi*t);
-y = r*sin(5*2*pi*t);
-
-z = r;
-psi = 4*2*pi*t;
+x = 0;
+y = 0;
+z = 0;
+psi = 10*2*pi*p_time;
 end

@@ -102,7 +102,7 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
             'user_parameters' , ...
             '\n'));
        controls = [0, 0, 0, 0];
-       flightTimeRemaining = 30;
+       flightTimeRemaining = 10000;
        OUTOFFRAME = 0;
        FAIL = 0;
         return;  % This exits the function imeediately on completion of initialization.
