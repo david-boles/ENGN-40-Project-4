@@ -19,8 +19,7 @@ function [thrust, pitch, roll] = convert_to_quad_vals(acceleration, yaw)
         unit_thrust_a = flip_fix*thrust_accel ./ norm(acceleration);
         pitch = -atan2(-unit_thrust_a(1), unit_thrust_a(3));
         roll = atan2(-unit_thrust_a(2), unit_thrust_a(3));
-        thrust = flip_fix*norm(thrust_accel)* m;
-        %* (1/(0.5*(cos(pitch) + cos(roll))));
+        thrust = flip_fix*norm(thrust_accel)* m * (1/());
     else
         thrust = m*g;
         pitch = 0;

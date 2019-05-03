@@ -35,10 +35,9 @@ if t < 0.5
 else
     r = 1 - t;
 end
-r = 0.8*r;
-x = r*cos(5*2*pi*t);
-y = r*sin(5*2*pi*t);
+x = r*cos(2*pi*t);
+y = r*sin(2*pi*t);
 
-z = r;
+z = 0;
 psi = 4*2*pi*t;
 end

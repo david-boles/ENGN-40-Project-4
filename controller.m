@@ -63,7 +63,6 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
     persistent initial_position;
     persistent last_errors;
     persistent error_integrals;
-    persistent last_omega_psi;
     
     if (INITIALIZING>0.5)   % We evaluate this block while initializing
        if (isempty(output_file))   % This opens a csv file for printing
@@ -83,15 +82,11 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
        initial_position = get_quad_pos( filter_vals,filter_wins,n_tracked_colors,dtime );
        
        if isempty(last_errors)
-          last_errors = [0, 0, 0, 0];
+          last_errors = [0, 0, 0];
        end
        
        if isempty(error_integrals)
-          error_integrals = [0, 0, 0, 0];
-       end
-       
-       if isempty(last_omega_psi)
-           last_omega_psi = 0;
+          error_integrals = [0, 0, 0];
        end
        
        fprintf(output_file,strcat( ...
@@ -135,7 +130,8 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
 
         quad_psi = orientation(3) * (pi / 180);
         
-        errors = [path_pos, path_psi] - [quad_pos, quad_psi];
+        errors = path_pos - quad_pos;
+        error_psi = mod(path_psi - quad_psi + pi,2*pi) - pi;
         
         if dtime == 0
             d_errors_dt = [0,0,0,0];
@@ -146,10 +142,7 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
         
 
         % Compute controller results
-        [thrust, roll, pitch, a_psi] = controller_core(quad_psi, errors, d_errors_dt, error_integrals);
-        
-        % Compute omega psi
-        omega_psi = last_omega_psi + (a_psi * dtime);
+        [thrust, roll, pitch, omega_psi] = controller_core(quad_psi, errors, d_errors_dt, error_integrals, error_psi);
         
         controls = [thrust * (1/constants.THRUST_UNITS_TO_N), roll * (180 / pi), pitch * (180 / pi), omega_psi * (180 / pi)];
         
@@ -171,7 +164,6 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
         % Update persistent variables
         last_errors = errors;
         error_integrals = error_integrals + (errors * dtime);
-        last_omega_psi = omega_psi;
     end
     
 end

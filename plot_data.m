@@ -1,7 +1,6 @@
 while true
-    close all;
     
-    filename = input('Log file path: ');
+    filename = input('Log file path: ', 's');
     if isempty(filename)
         filename = '\flight_data.csv';
     end
@@ -19,6 +18,8 @@ while true
     controls = M(18:21, :);
     v_bat = M(22, :);
     user_parameters = M(23, :);
+    
+    close all;
     
     figure;
     plot(time, dtime);
