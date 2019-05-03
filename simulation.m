@@ -6,7 +6,7 @@ m=constants.MASS_KG;
 g=constants.G; %Newtons
 initial_w=[0,0,0,0,0,0,0,0,0,0,0,0]; %[x,y,z,yaw,vx,vy,vz,omega_psi,ex,ey,ez,e_psi]
 
-time_range=[0,16];
+time_range=[0,30];
 
 [t_values,sol_values] = ode45(@(t,w) diff_eq(t,w,m,g),time_range,initial_w);
 figure
@@ -68,6 +68,10 @@ dyawerrordt=dyawstardt-omega_psi;
 [tau,theta,phi,alpha_psi]=controller_core(yaw, [xerror,yerror,zerror,yawerror],...
     [dxerrordt,dyerrordt,dzerrordt,dyawerrordt],[ex,ey,ez,e_psi]);
 
+if t >= 0.2
+    disp('BAHAHAS');
+end
+
 %equations
 dxdt=vx;
 dydt=vy;
@@ -75,7 +79,7 @@ dzdt=vz;
 dyawdt=omega_psi;
 dvxdt=(sin(theta)*sin(yaw)+cos(theta)*sin(phi)*cos(yaw))*tau/m;
 dvydt=(cos(theta)*sin(phi)*sin(yaw)-sin(theta)*cos(yaw))*tau/m;
-dvzdt=cos(theta)*cos(phi)*tau/m-g;
+dvzdt=(cos(theta)*cos(phi)*tau/m)-g;
 domega_psidt=alpha_psi;
 
 dwdt=[dxdt;dydt;dzdt;dyawdt;dvxdt;dvydt;dvzdt;domega_psidt;xerror;yerror;zerror;yawerror];
