@@ -32,5 +32,5 @@ function [x, y, z, psi] = pattern(p_time)
     x = 0;
     y = 0;
     z = 0;
-    psi = pi;
+    psi = 0;
 end
