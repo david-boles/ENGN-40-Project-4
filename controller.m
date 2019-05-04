@@ -109,11 +109,6 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
     else
     
         [quad_pos,OUTOFFRAME_all,FAIL_all] = get_quad_pos( filter_vals,filter_wins,n_tracked_colors,dtime );
-        disp('init pos');
-        disp(initial_position);
-        disp('quad_pos:');
-        disp(quad_pos);
-        disp('=========');
         FAIL = FAIL_all(1);             
         OUTOFFRAME = OUTOFFRAME_all(1);
 

@@ -46,10 +46,4 @@ function [x, y, z, psi] = pattern(p_time, user_parameters)
     
     psi = atan2(cos(constants.LISSAJOUS_OMEGA_SCALE * omega_y * p_time), -sin(constants.LISSAJOUS_OMEGA_SCALE * p_time));
     %psi = 5*cos(constants.LISSAJOUS_OMEGA_SCALE * p_time);
-    disp('x');
-    disp(x);
-    disp('y');
-    disp(y);
-    disp('psi');
-    disp(psi);
 end
