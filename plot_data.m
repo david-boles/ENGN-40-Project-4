@@ -4,7 +4,7 @@ while true
     filename = input('Log file path: ', 's');
 
     if isempty(filename)
-        filename = '\flight_data.csv';
+        filename = '\\files.brown.edu\Home\dboles\Desktop\flight_data.csv';
     end
     M = csvread(filename, 1, 0);
     
@@ -34,9 +34,8 @@ while true
 	omega_psi = M(:, 17);
     controls = M(:, 18:21);
     v_bat = M(:, 22);
-    user_parameters = M(:, 23);
-    
-    close all;
+    path_psi = M(:, 23);
+    error_psi = M(:, 24);
     
     close all;
     
@@ -50,7 +49,7 @@ while true
     legend('aL','aT','aN');
     
     figure;
-    plot(time, orientation(1), time, orientation(2), time, orientation(3));
+    plot(time, orientation(:, 1), time, orientation(:, 2), time, orientation(:, 3));
     title('Measured orientation vs time');
     legend('roll', 'pitch', 'yaw');
     
@@ -68,6 +67,11 @@ while true
     plot(time, quad_pos(:, 3), time, path_pos(:, 3));
     title('z position vs time');
     legend('measured', 'target');
+    
+    figure;
+    plot(time, path_psi, time, orientation(:, 3) * (pi/180), time, error_psi, time, omega_psi);
+    title('Psi');
+    legend('target', 'quad', 'error', 'omega');
     
     % Can add the rest if needed...
 end

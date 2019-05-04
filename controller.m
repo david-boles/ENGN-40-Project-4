@@ -71,7 +71,7 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
        end
        
        if isempty(format_string)
-          n_printed_variables = 23;  % This is the # of variables printed to the .csv file 
+          n_printed_variables = 24;  % This is the # of variables printed to the .csv file 
           format_string = '%12.8f';
           for i=1:n_printed_variables-1
               format_string = strcat(format_string,', %12.8f');
@@ -99,7 +99,7 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
             'omega_psi, ' , ...
             'controls(1), controls(2), controls(3), controls(4), ' , ...
             'vbat, ' , ...
-            'user_parameters' , ...
+            'path_psi, error_psi', ...
             '\n'));
        controls = [0, 0, 0, 0];
        flightTimeRemaining = 10000;
@@ -123,9 +123,9 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
         [path_x, path_y, path_z, path_psi, flightTimeRemaining] = path(time, user_parameters);
         path_pos = [path_x, path_y, path_z] + initial_position; % Target position of the quadcopter in meters as a row vector [x, y, z]
 
-        if (flightTimeRemaining<0)
+        if (flightTimeRemaining<1)
             FAIL=1;    % Activates the crash-land sequence if the clock ran out
-            return
+            return;
         end
 
         quad_psi = orientation(3) * (pi / 180);
@@ -146,6 +146,10 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
         
         controls = [thrust * (1/constants.THRUST_UNITS_TO_N), roll * (180 / pi), pitch * (180 / pi), omega_psi * (180 / pi)];
         
+        if (flightTimeRemaining<1)
+            controls=[0,0,0,0];
+        end
+        
         % Print data to the log file - if changed, also edit above header
         % printing
         % and the plot_data function
@@ -159,7 +163,8 @@ function [controls,flightTimeRemaining,OUTOFFRAME,FAIL ] = controller(time,dtime
             omega_psi, ...
             controls(1), controls(2), controls(3), controls(4), ...
             vbat, ...
-            user_parameters);
+            path_psi, error_psi...
+        );
 
         % Update persistent variables
         last_errors = errors;
